@@ -1,6 +1,12 @@
 package main
 
-import "math"
+import (
+	"bufio"
+	"io"
+	"log"
+	"math"
+	"os"
+)
 
 func H(num uint8) uint8 {
 	var table = [][]uint8{
@@ -114,4 +120,77 @@ func main() {
 	for _, element := range decoded {
 		print(element, " ")
 	}
+
+	const inputFileName = "input.txt"
+	const outputFileName = "output.txt"
+	const space = ' '
+	const spaceFiller = uint32(space) |
+		(uint32(space) << 8) |
+		(uint32(space) << 16) |
+		(uint32(space) << 24)
+
+	inFile, err := os.Open(inputFileName)
+	defer inFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reader := bufio.NewReader(inFile)
+	var buf uint32 = 0
+	var numOfByte = 0
+	var data []uint32
+	for {
+		if char, err := reader.ReadByte(); err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				log.Fatal(err)
+			}
+		} else {
+			buf |= uint32(char) << (8 * numOfByte)
+			numOfByte++
+			if numOfByte >= 4 {
+				data = append(data, buf)
+				buf = 0
+				numOfByte = 0
+			}
+		}
+	}
+
+	if numOfByte > 0 {
+		for i := numOfByte; i < 4; i++ {
+			buf |= uint32(space) << (8 * numOfByte)
+			numOfByte++
+		}
+
+		data = append(data, buf)
+	}
+
+	for len(data)%4 != 0 {
+		data = append(data, spaceFiller)
+	}
+
+	var encodedData []uint32 = encode_decode(data, key, s)
+	var decodedData []uint32 = encode_decode(encodedData, key, s)
+
+	outFile, err := os.Create(outputFileName)
+	defer outFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer := bufio.NewWriter(outFile)
+
+	for i := 0; i < len(decodedData); i++ {
+		for byteNum := 0; byteNum < 4; byteNum++ {
+			b := byte(decodedData[i] >> (uint32(byteNum) * 8))
+			err := writer.WriteByte(b)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+	writer.Flush()
 }
