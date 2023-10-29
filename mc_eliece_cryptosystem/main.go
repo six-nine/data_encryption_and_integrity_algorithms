@@ -1,0 +1,212 @@
+package main
+
+import (
+	"fmt"
+    "math/rand"
+)
+
+func ithBit(num uint8, i int) uint8 {
+    return (num >> i) & 1
+}
+
+func mulVecMat(vec uint8, matrix []uint8, columnSize int) uint8 {
+    var result uint8
+
+    for i := 0; i < len(matrix); i++ {
+        curRes := uint8(0)
+        for bitNum := 0; bitNum < columnSize; bitNum++ {
+            curRes ^= ithBit(vec, bitNum) * ithBit(matrix[i], bitNum)
+        }
+        result |= curRes << (len(matrix) - 1 - i)
+    }
+
+    return result
+}
+
+func mulMatMat(m1Rows []uint8, m2Cols []uint8, columnSize int) []uint8 {
+    var result []uint8
+    for i := 0; i < len(m1Rows); i++ {
+        result = append(result, mulVecMat(m1Rows[i], m2Cols, columnSize))
+    }
+
+    return result
+}
+
+var HAMMING_GEN_MATRIX_COLUMNS = []uint8 {
+    0b1000,
+    0b0100,
+    0b0010,
+    0b0001,
+    0b1101,
+    0b1011,
+    0b0111,
+}
+
+var HAMMING_DECODER_MATRIX_COLUMNS = []uint8 {
+    0b1101100,
+    0b1011010,
+    0b0111001,
+}
+
+var SCRAMBLER_MATRIX_ROWS = []uint8 {
+    0b1101,
+    0b1001,
+    0b0111,
+    0b1100,
+}
+
+var SCRAMBLER_INVERSE_COLUMNS = []uint8 {
+    0b1101,
+    0b1110,
+    0b0010,
+    0b1011,
+}
+
+var PERMUTATION_MATRIX_COLUMNS = []uint8 {
+    0b0001000,
+    0b1000000,
+    0b0000100,
+    0b0100000,
+    0b0000001,
+    0b0000010,
+    0b0010000,
+}
+
+func printMat(mat []uint8) {
+    for _, row := range mat {
+        fmt.Printf("%08b\n", row)
+    }
+}
+
+func printBin(num uint8, message string) {
+    fmt.Printf(message + "%08b\n", num)
+}
+
+func keyGen() []uint8 {
+    
+    sgp := mulMatMat(SCRAMBLER_MATRIX_ROWS, HAMMING_GEN_MATRIX_COLUMNS, 4)
+    sgp = mulMatMat(sgp, PERMUTATION_MATRIX_COLUMNS, 7)
+
+    return sgp
+}
+
+func encode(message uint8, sgp []uint8) uint8 {
+    sgpCols := transpose(sgp, 7)
+    encrypted := mulVecMat(message, sgpCols, 4)
+    errorPos := rand.Intn(7)
+    encrypted ^= 1 << errorPos
+    
+    return encrypted
+}
+
+func transpose(matrix []uint8, n int) []uint8 {
+    result := make([]uint8, n)
+    for i := 0; i < n; i++ {
+        for j := 0; j < len(matrix); j++ {
+            result[i] |= ithBit(matrix[j], n - i - 1) << (len(matrix) - 1 - j)
+        }
+    }
+    
+    return result
+}
+
+func decode(message uint8) uint8 {
+    var HAMMING_ERROR_POSITION = []int {-1, 7, 6, 3, 5, 2, 1, 4}
+    P_T := transpose(PERMUTATION_MATRIX_COLUMNS, 7) // inverse of permutation matrix is it's transpose
+    c := mulVecMat(message, P_T, 7)
+
+    hammingSyndrom := mulVecMat(c, HAMMING_DECODER_MATRIX_COLUMNS, 7)
+    if hammingSyndrom != 0 {
+        errorPos := 7 - HAMMING_ERROR_POSITION[hammingSyndrom]
+        c ^= 1 << errorPos
+    }
+
+    c >>= 3 // remove pairity bits
+
+    result := mulVecMat(c, SCRAMBLER_INVERSE_COLUMNS, 4)
+
+    return result
+}
+
+func main() {
+
+    //x := uint8(0b1101)
+    //res := mulVecMat(x, HAMMING_GEN_MATRIX_COLUMNS, 4)
+    //fmt.Printf("%08b\n", res)
+    sgp := keyGen()
+    fmt.Println("S*G*P (public key) = ")
+    printMat(sgp)
+
+    encoded := encode(0b1101, sgp)
+    fmt.Printf("Encoded: %08b\n", encoded)
+    fmt.Printf("%08b", decode(encoded))
+    /*
+    p := big.NewInt(99991)
+	q := big.NewInt(99907)
+	n := new(big.Int).Mul(p, q)
+
+	const inputFileName = "input.txt"
+	const outputFileName = "output.txt"
+	const space = ' '
+
+	inFile, err := os.Open(inputFileName)
+	defer inFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reader := bufio.NewReader(inFile)
+	var data []byte
+	for {
+		if char, err := reader.ReadByte(); err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				log.Fatal(err)
+			}
+		} else {
+			data = append(data, char)
+		}
+	}
+	var encryptedData []*big.Int
+	for _, b := range data {
+		encryptedData = append(
+			encryptedData,
+			encrypt(big.NewInt(int64(b)), n))
+	}
+
+	println("Encrypte data:")
+	for _, i := range encryptedData {
+		print(i.String(), " ")
+	}
+
+	var decryptedData []byte
+	for _, b := range encryptedData {
+		decrypted := decrypt(b, p, q)
+		if decrypted == nil {
+			log.Fatal("Can't decrypt!")
+			return
+		}
+		decryptedData = append(decryptedData, byte(decrypted.Int64()))
+	}
+
+	outFile, err := os.Create(outputFileName)
+	defer outFile.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer := bufio.NewWriter(outFile)
+
+	for _, b := range decryptedData {
+		err := writer.WriteByte(b)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	writer.Flush()
+    */
+
+}
