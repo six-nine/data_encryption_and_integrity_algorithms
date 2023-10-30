@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
     "math/rand"
+    "os"
+    "log"
+    "bufio"
+    "io"
 )
 
 func ithBit(num uint8, i int) uint8 {
@@ -140,13 +144,9 @@ func main() {
     encoded := encode(0b1101, sgp)
     fmt.Printf("Encoded: %08b\n", encoded)
     fmt.Printf("%08b", decode(encoded))
-    /*
-    p := big.NewInt(99991)
-	q := big.NewInt(99907)
-	n := new(big.Int).Mul(p, q)
 
-	const inputFileName = "input.txt"
-	const outputFileName = "output.txt"
+	const inputFileName = "in.txt"
+	const outputFileName = "out.txt"
 	const space = ' '
 
 	inFile, err := os.Open(inputFileName)
@@ -169,29 +169,37 @@ func main() {
 			data = append(data, char)
 		}
 	}
-	var encryptedData []*big.Int
+
+	var encryptedData []uint8
 	for _, b := range data {
+        lower := uint8(b & ((1 << 4) - 1))
+        upper := uint8(b >> 4)
 		encryptedData = append(
 			encryptedData,
-			encrypt(big.NewInt(int64(b)), n))
+            encode(lower, sgp),
+            encode(upper, sgp),
+        )
 	}
 
-	println("Encrypte data:")
+	println("Encrypted data:")
 	for _, i := range encryptedData {
-		print(i.String(), " ")
+		print(i, " ")
 	}
 
 	var decryptedData []byte
-	for _, b := range encryptedData {
-		decrypted := decrypt(b, p, q)
-		if decrypted == nil {
-			log.Fatal("Can't decrypt!")
-			return
-		}
-		decryptedData = append(decryptedData, byte(decrypted.Int64()))
-	}
+
+    for i := 0; i < len(encryptedData); i += 2 {
+        decryptedLower := decode(encryptedData[i])
+        decryptedUpper := decode(encryptedData[i + 1])
+        
+        decrypted := (decryptedUpper << 4) | decryptedLower
+        decryptedData = append(decryptedData, decrypted)
+    }
 
 	outFile, err := os.Create(outputFileName)
+    if err != nil {
+        log.Fatal(err)
+    }
 	defer outFile.Close()
 
 	if err != nil {
@@ -207,6 +215,5 @@ func main() {
 		}
 	}
 	writer.Flush()
-    */
 
 }
