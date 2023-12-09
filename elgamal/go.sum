@@ -1,0 +1,7 @@
+github.com/arnaucube/cryptofun v0.0.0-20181124004321-9b11ae8280bd/go.mod h1:PZE8kKpHPD1UMrS3mTfAMmEEinGtijSwjxLRqRcD64A=
+github.com/arnaucube/cryptofun v0.0.0-20190603183703-df33a4bbd574 h1:CF7VgoeJTUsphBKztUXdS7OTfM+ifx32yzRWSlILGw8=
+github.com/arnaucube/cryptofun v0.0.0-20190603183703-df33a4bbd574/go.mod h1:/B6FaxAphhUEFigq7FAwZn2wWWDebPqc8IUUe3QPfW8=
+github.com/arnaucube/go-snark v0.0.0-20181207210027-19f7216d0e3d/go.mod h1:gLycS/B43DufBaH0jH8kqiE4A7w5FdOM8I9S416xh2Y=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
