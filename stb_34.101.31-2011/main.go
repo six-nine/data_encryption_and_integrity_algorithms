@@ -109,17 +109,8 @@ func encode_decode(X []uint32, key [8]uint32, S [4]uint32) []uint32 {
 }
 
 func main() {
-	var X = []uint32{12, 67, 34, 56, 12, 56, 34, 45, 56}
 	var s = [4]uint32{69, 88, 12, 14}
 	var key = [8]uint32{1, 2, 3, 4, 5, 6, 7, 8}
-
-	encoded := encode_decode(X, key, s)
-	println(encoded)
-	decoded := encode_decode(encoded, key, s)
-	println(decoded)
-	for _, element := range decoded {
-		print(element, " ")
-	}
 
 	const inputFileName = "input.txt"
 	const outputFileName = "output.txt"
@@ -172,6 +163,10 @@ func main() {
 	}
 
 	var encodedData []uint32 = encode_decode(data, key, s)
+
+	for _, element := range encodedData {
+		print(element, " ")
+	}
 	var decodedData []uint32 = encode_decode(encodedData, key, s)
 
 	outFile, err := os.Create(outputFileName)

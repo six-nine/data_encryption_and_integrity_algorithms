@@ -134,16 +134,10 @@ func decode(message uint8) uint8 {
 
 func main() {
 
-    //x := uint8(0b1101)
-    //res := mulVecMat(x, HAMMING_GEN_MATRIX_COLUMNS, 4)
-    //fmt.Printf("%08b\n", res)
     sgp := keyGen()
     fmt.Println("S*G*P (public key) = ")
     printMat(sgp)
-
-    encoded := encode(0b1101, sgp)
-    fmt.Printf("Encoded: %08b\n", encoded)
-    fmt.Printf("%08b", decode(encoded))
+    fmt.Println()
 
 	const inputFileName = "in.txt"
 	const outputFileName = "out.txt"
